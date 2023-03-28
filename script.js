@@ -20,21 +20,6 @@ const Gameboard = (() => {
   };
 })();
 
-// DisplayController Module
-const DisplayController = (() => {
-  window.addEventListener('DOMContentLoaded', () => {
-    const squares = document.querySelectorAll('#gameBoard > div');
-
-    squares.forEach((square, index) => {
-      square.addEventListener('click', () => {
-        const { marker } = player;
-        Gameboard.makeMove(index, marker);
-        square.textContent = marker;
-      });
-    });
-  });
-})();
-
 // WinningConditions Module
 const WinningConditions = (() => {
   const winningCombos = [
@@ -61,24 +46,27 @@ const WinningConditions = (() => {
   };
 })();
 
+// AI Module
+const AI = (() => {
+  const randomMove = (board) => {
+    const availableMoves = board
+      .map((cell, index) => (cell === null ? index : null))
+      .filter((index) => index !== null);
+    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+  };
+
+  return {
+    randomMove,
+  };
+})();
+
 // GameController Module
 const GameController = (() => {
-  const squares = document.querySelectorAll('#gameBoard > div');
-  squares.forEach((square, index) => {
-    square.addEventListener('click', () => {
-      GameController.makeMove(index);
-    });
-  });
-
   let currentPlayer = player;
 
-  const makeMove = (index) => {
-    Gameboard.makeMove(index, currentPlayer.marker);
-
-    const square = document.getElementById(`square${index + 1}`);
-    if (square) {
-      square.textContent = currentPlayer.marker;
-    }
+  const playTurn = (index) => {
+    const { marker } = currentPlayer;
+    Gameboard.makeMove(index, marker);
 
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
       console.log(`${currentPlayer.name} wins!`);
@@ -86,16 +74,85 @@ const GameController = (() => {
       console.log('Its a tie!');
     } else {
       currentPlayer = currentPlayer === player ? ai : player;
+
+      if (currentPlayer === ai) {
+        setTimeout(() => {
+          const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
+          playTurn(aiMoveIndex);
+        }, 500);
+      }
     }
+
+    DisplayController.displayBoard();
+  };
+
+  const restartGame = () => {
+    Gameboard.getBoard().fill(null);
+    DisplayController.clearBoard();
+    currentPlayer = player;
   };
 
   return {
-    makeMove,
+    playTurn,
+    restartGame,
+    currentPlayer,
   };
 })();
 
-console.log(player, ai);
-console.log(Gameboard);
-console.log(DisplayController);
-console.log(WinningConditions);
-console.log(GameController);
+// DisplayController Module
+const DisplayController = (() => {
+  const squares = document.querySelectorAll('#gameBoard > div');
+  const restartButton = document.querySelector('#restartButton button');
+  const playerXButton = document.querySelector('#playerX');
+  const playerOButton = document.querySelector('#playerO');
+
+  const setMarkers = (playerMarker, aiMarker) => {
+    player.marker = playerMarker;
+    ai.marker = aiMarker;
+    GameController.restartGame();
+  };
+
+  const displayBoard = () => {
+    const board = Gameboard.getBoard();
+    squares.forEach((square, index) => {
+      square.textContent = board[index] || ''; // use an empty string for empty squares
+    });
+  };
+
+  const clearBoard = () => {
+    squares.forEach((square) => (square.textContent = ''));
+  };
+
+  squares.forEach((square, index) => {
+    square.addEventListener('click', () => {
+      if (!Gameboard.getBoard()[index]) {
+        GameController.playTurn(index);
+        square.textContent = GameController.currentPlayer.marker; // update the currentPlayer variable here
+      }
+    });
+  });
+
+  restartButton.addEventListener('click', () => {
+    GameController.restartGame();
+  });
+
+  playerXButton.addEventListener('click', () => {
+    setMarkers('x', 'o');
+    playerXButton.disabled = true;
+    playerOButton.disabled = false;
+    GameController.currentPlayer = player;
+  });
+
+  playerOButton.addEventListener('click', () => {
+    setMarkers('o', 'x');
+    playerOButton.disabled = true;
+    playerXButton.disabled = false;
+    GameController.currentPlayer = ai;
+    displayBoard();
+  });
+
+  return {
+    clearBoard,
+    displayBoard,
+  };
+})();
