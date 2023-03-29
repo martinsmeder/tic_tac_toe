@@ -70,8 +70,10 @@ const GameController = (() => {
 
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
       console.log(`${currentPlayer.name} wins!`);
+      currentPlayer = player;
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
       console.log('Its a tie!');
+      currentPlayer = player;
     } else {
       currentPlayer = currentPlayer === player ? ai : player;
 
@@ -86,15 +88,8 @@ const GameController = (() => {
     DisplayController.displayBoard();
   };
 
-  const restartGame = () => {
-    Gameboard.getBoard().fill(null);
-    DisplayController.clearBoard();
-    currentPlayer = player;
-  };
-
   return {
     playTurn,
-    restartGame,
     currentPlayer,
   };
 })();
@@ -109,50 +104,53 @@ const DisplayController = (() => {
   const setMarkers = (playerMarker, aiMarker) => {
     player.marker = playerMarker;
     ai.marker = aiMarker;
-    GameController.restartGame();
   };
 
   const displayBoard = () => {
     const board = Gameboard.getBoard();
     squares.forEach((square, index) => {
-      square.textContent = board[index] || ''; // use an empty string for empty squares
+      square.textContent = board[index] || '';
     });
   };
 
   const clearBoard = () => {
     squares.forEach((square) => (square.textContent = ''));
+    GameController.currentPlayer = player;
   };
 
   squares.forEach((square, index) => {
     square.addEventListener('click', () => {
       if (!Gameboard.getBoard()[index]) {
         GameController.playTurn(index);
-        square.textContent = GameController.currentPlayer.marker; // update the currentPlayer variable here
+        square.textContent = GameController.currentPlayer.marker;
       }
     });
   });
 
+  const restartGame = () => {
+    Gameboard.getBoard().fill(null);
+    clearBoard();
+  };
+
   restartButton.addEventListener('click', () => {
-    GameController.restartGame();
+    restartGame();
   });
 
   playerXButton.addEventListener('click', () => {
     setMarkers('x', 'o');
     playerXButton.disabled = true;
     playerOButton.disabled = false;
-    GameController.currentPlayer = player;
   });
 
   playerOButton.addEventListener('click', () => {
     setMarkers('o', 'x');
     playerOButton.disabled = true;
     playerXButton.disabled = false;
-    GameController.currentPlayer = ai;
-    displayBoard();
   });
 
   return {
     clearBoard,
     displayBoard,
+    restartGame,
   };
 })();
