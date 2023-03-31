@@ -48,12 +48,57 @@ const WinningConditions = (() => {
 
 // AI Module
 const AI = (() => {
+  const getAvailableMoves = (board) =>
+    board
+      .map((cell, index) => (cell === null ? index : null))
+      .filter((index) => index !== null);
+
   // Random Move AI
   const randomMove = (board) => {
     const availableMoves = board
       .map((cell, index) => (cell === null ? index : null))
       .filter((index) => index !== null);
     return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+  };
+
+  // Semi-strategic Move AI
+  const getIntermediateMoveIndex = (board) => {
+    const availableMoves = getAvailableMoves(board);
+    let selectedMoveIndex = null;
+
+    // Check if there is a winning move available
+    for (let i = 0; i < availableMoves.length; i++) {
+      const testBoard = [...board];
+      testBoard[availableMoves[i]] = ai.marker;
+      if (WinningConditions.checkWin(testBoard, ai)) {
+        selectedMoveIndex = availableMoves[i];
+        break;
+      }
+    }
+
+    // If no winning move is available, select a move based on probability distribution
+    if (selectedMoveIndex === null) {
+      const distribution = [2, 1, 2, 1, 4, 1, 2, 1, 2]; // probability distribution
+      const weightedMoves = availableMoves.map((move) => ({
+        move,
+        weight: distribution[move],
+      }));
+      const totalWeight = weightedMoves.reduce(
+        (accumulator, { weight }) => accumulator + weight,
+        0
+      );
+      const randomWeight = Math.floor(Math.random() * totalWeight) + 1;
+      let cumulativeWeight = 0;
+      for (let i = 0; i < weightedMoves.length; i++) {
+        cumulativeWeight += weightedMoves[i].weight;
+        if (cumulativeWeight >= randomWeight) {
+          selectedMoveIndex = weightedMoves[i].move;
+          break;
+        }
+      }
+    }
+
+    return selectedMoveIndex;
   };
 
   // Best Move AI
@@ -98,11 +143,6 @@ const AI = (() => {
     return bestScore;
   };
 
-  const getAvailableMoves = (board) =>
-    board
-      .map((cell, index) => (cell === null ? index : null))
-      .filter((index) => index !== null);
-
   const getBestMoveIndex = (board) => {
     let bestScore = -Infinity;
     let bestMoveIndex = null;
@@ -122,6 +162,7 @@ const AI = (() => {
 
   return {
     randomMove,
+    getIntermediateMoveIndex,
     getBestMoveIndex,
   };
 })();
@@ -145,19 +186,23 @@ const GameController = (() => {
 
       if (currentPlayer === ai) {
         if (DisplayController.difficulty === 'dumb') {
-          console.log(DisplayController.difficulty);
           setTimeout(() => {
             const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
             playTurn(aiMoveIndex);
           }, 500);
+        } else if (DisplayController.difficulty === 'strategic') {
+          setTimeout(() => {
+            const aiMoveIndex = AI.getIntermediateMoveIndex(
+              Gameboard.getBoard()
+            );
+            playTurn(aiMoveIndex);
+          }, 500);
         } else if (DisplayController.difficulty === 'unbeatable') {
-          console.log(DisplayController.difficulty);
           setTimeout(() => {
             const aiMoveIndex = AI.getBestMoveIndex(Gameboard.getBoard());
             playTurn(aiMoveIndex);
           }, 500);
         } else {
-          console.log(DisplayController.difficulty);
           setTimeout(() => {
             const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
             playTurn(aiMoveIndex);
@@ -189,10 +234,10 @@ const DisplayController = (() => {
   const handleDifficulty = (e) => {
     if (e.target.value === 'dumb') {
       DisplayController.difficulty = 'dumb';
-      console.log(DisplayController.difficulty);
+    } else if (e.target.value === 'strategic') {
+      DisplayController.difficulty = 'strategic';
     } else if (e.target.value === 'unbeatable') {
       DisplayController.difficulty = 'unbeatable';
-      console.log(DisplayController.difficulty);
     }
     return DisplayController.difficulty;
   };
