@@ -48,6 +48,7 @@ const WinningConditions = (() => {
 
 // AI Module
 const AI = (() => {
+  // Random Move AI
   const randomMove = (board) => {
     const availableMoves = board
       .map((cell, index) => (cell === null ? index : null))
@@ -55,8 +56,73 @@ const AI = (() => {
     return availableMoves[Math.floor(Math.random() * availableMoves.length)];
   };
 
+  // Best Move AI
+  const getBestMove = (board, depth, isMaximizing) => {
+    const scores = {
+      x: -10,
+      o: 10,
+      tie: 0,
+    };
+
+    if (WinningConditions.checkWin(board, player)) {
+      return scores.x;
+    }
+    if (WinningConditions.checkWin(board, ai)) {
+      return scores.o;
+    }
+    if (WinningConditions.checkTie(board)) {
+      return scores.tie;
+    }
+
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === null) {
+          board[i] = ai.marker;
+          const score = getBestMove(board, depth + 1, false);
+          board[i] = null;
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+    let bestScore = Infinity;
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === null) {
+        board[i] = player.marker;
+        const score = getBestMove(board, depth + 1, true);
+        board[i] = null;
+        bestScore = Math.min(score, bestScore);
+      }
+    }
+    return bestScore;
+  };
+
+  const getAvailableMoves = (board) =>
+    board
+      .map((cell, index) => (cell === null ? index : null))
+      .filter((index) => index !== null);
+
+  const getBestMoveIndex = (board) => {
+    let bestScore = -Infinity;
+    let bestMoveIndex = null;
+    const availableMoves = getAvailableMoves(board);
+    for (let i = 0; i < availableMoves.length; i++) {
+      const index = availableMoves[i];
+      board[index] = ai.marker;
+      const score = getBestMove(board, 0, false);
+      board[index] = null;
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoveIndex = index;
+      }
+    }
+    return bestMoveIndex;
+  };
+
   return {
     randomMove,
+    getBestMoveIndex,
   };
 })();
 
@@ -78,10 +144,25 @@ const GameController = (() => {
       currentPlayer = currentPlayer === player ? ai : player;
 
       if (currentPlayer === ai) {
-        setTimeout(() => {
-          const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
-          playTurn(aiMoveIndex);
-        }, 500);
+        if (DisplayController.difficulty === 'dumb') {
+          console.log(DisplayController.difficulty);
+          setTimeout(() => {
+            const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
+            playTurn(aiMoveIndex);
+          }, 500);
+        } else if (DisplayController.difficulty === 'unbeatable') {
+          console.log(DisplayController.difficulty);
+          setTimeout(() => {
+            const aiMoveIndex = AI.getBestMoveIndex(Gameboard.getBoard());
+            playTurn(aiMoveIndex);
+          }, 500);
+        } else {
+          console.log(DisplayController.difficulty);
+          setTimeout(() => {
+            const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
+            playTurn(aiMoveIndex);
+          }, 500);
+        }
       }
     }
 
@@ -98,12 +179,22 @@ const GameController = (() => {
 const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
   const restartButton = document.querySelector('#restartButton button');
-  const playerXButton = document.querySelector('#playerX');
-  const playerOButton = document.querySelector('#playerO');
+  const dropdownMenu = document.querySelector('#difficulty');
+  const difficulty = null;
 
-  const setMarkers = (playerMarker, aiMarker) => {
-    player.marker = playerMarker;
-    ai.marker = aiMarker;
+  dropdownMenu.addEventListener('change', (e) => {
+    handleDifficulty(e);
+  });
+
+  const handleDifficulty = (e) => {
+    if (e.target.value === 'dumb') {
+      DisplayController.difficulty = 'dumb';
+      console.log(DisplayController.difficulty);
+    } else if (e.target.value === 'unbeatable') {
+      DisplayController.difficulty = 'unbeatable';
+      console.log(DisplayController.difficulty);
+    }
+    return DisplayController.difficulty;
   };
 
   const displayBoard = () => {
@@ -136,21 +227,11 @@ const DisplayController = (() => {
     restartGame();
   });
 
-  playerXButton.addEventListener('click', () => {
-    setMarkers('x', 'o');
-    playerXButton.disabled = true;
-    playerOButton.disabled = false;
-  });
-
-  playerOButton.addEventListener('click', () => {
-    setMarkers('o', 'x');
-    playerOButton.disabled = true;
-    playerXButton.disabled = false;
-  });
-
   return {
+    handleDifficulty,
     clearBoard,
     displayBoard,
     restartGame,
+    difficulty,
   };
 })();
