@@ -170,16 +170,19 @@ const AI = (() => {
 // GameController Module
 const GameController = (() => {
   let currentPlayer = player;
+  let winnerMessage = null;
 
   const playTurn = (index) => {
     const { marker } = currentPlayer;
     Gameboard.makeMove(index, marker);
 
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
-      console.log(`${currentPlayer.name} wins!`);
+      winnerMessage = `The winner is ${currentPlayer.name}!`;
+      DisplayController.displayWinner();
       currentPlayer = player;
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
-      console.log('Its a tie!');
+      winnerMessage = 'Its a tie!';
+      DisplayController.displayWinner();
       currentPlayer = player;
     } else {
       currentPlayer = currentPlayer === player ? ai : player;
@@ -217,6 +220,7 @@ const GameController = (() => {
   return {
     playTurn,
     currentPlayer,
+    getWinner: () => winnerMessage,
   };
 })();
 
@@ -225,7 +229,13 @@ const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
   const restartButton = document.querySelector('#restartButton button');
   const dropdownMenu = document.querySelector('#difficulty');
+  // const overlay = document.querySelector('#overlay');
   const difficulty = null;
+
+  const displayWinner = () => {
+    const winnerMessage = GameController.getWinner();
+    console.log(winnerMessage);
+  };
 
   dropdownMenu.addEventListener('change', (e) => {
     handleDifficulty(e);
@@ -276,6 +286,7 @@ const DisplayController = (() => {
     handleDifficulty,
     clearBoard,
     displayBoard,
+    displayWinner,
     restartGame,
     difficulty,
   };
