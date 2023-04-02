@@ -177,11 +177,11 @@ const GameController = (() => {
     Gameboard.makeMove(index, marker);
 
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
-      winnerMessage = `The winner is ${currentPlayer.name}!`;
+      winnerMessage = `${currentPlayer.name.toUpperCase()} WON!`;
       DisplayController.displayWinner();
       currentPlayer = player;
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
-      winnerMessage = 'Its a tie!';
+      winnerMessage = 'ITS A TIE!';
       DisplayController.displayWinner();
       currentPlayer = player;
     } else {
@@ -229,12 +229,31 @@ const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
   const restartButton = document.querySelector('#restartButton button');
   const dropdownMenu = document.querySelector('#difficulty');
-  // const overlay = document.querySelector('#overlay');
+
   const difficulty = null;
 
   const displayWinner = () => {
     const winnerMessage = GameController.getWinner();
-    console.log(winnerMessage);
+
+    const overlay = document.querySelector('#overlay');
+    overlay.style.display = 'flex';
+
+    const popup = document.querySelector('#popup');
+
+    const roundResult = document.createElement('p');
+    roundResult.textContent = winnerMessage;
+    popup.appendChild(roundResult);
+
+    const restartBtn = document.createElement('button');
+    restartBtn.textContent = 'Restart';
+    popup.appendChild(restartBtn);
+
+    restartBtn.addEventListener('click', () => {
+      DisplayController.restartGame();
+      popup.removeChild(roundResult);
+      popup.removeChild(restartBtn);
+      overlay.style.display = 'none';
+    });
   };
 
   dropdownMenu.addEventListener('change', (e) => {
