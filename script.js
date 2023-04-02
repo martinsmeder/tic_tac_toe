@@ -5,11 +5,15 @@ const Player = (name, marker) => ({ name, marker });
 const player = Player('player', 'x');
 const ai = Player('ai', 'o');
 
-// GameBoard Module
+// Gameboard Module
 const Gameboard = (() => {
+  // Array with 9 elements that is filled with null
   const board = new Array(9).fill(null);
 
+  // Returns the current state of the board
   const getBoard = () => board;
+
+  // Allows player to move on the board by setting their marker in the specified index
   const makeMove = (index, player) => {
     board[index] = player;
   };
@@ -33,11 +37,13 @@ const WinningConditions = (() => {
     [2, 4, 6],
   ];
 
+  // Check if the given player has won
   const checkWin = (board, player) =>
     winningCombos.some((combo) =>
       combo.every((index) => board[index] === player.marker)
     );
 
+  // Check if the game is tied
   const checkTie = (board) => board.every((cell) => cell !== null);
 
   return {
@@ -53,7 +59,7 @@ const AI = (() => {
       .map((cell, index) => (cell === null ? index : null))
       .filter((index) => index !== null);
 
-  // Random Move AI
+  // Dumb AI (makes random move)
   const randomMove = (board) => {
     const availableMoves = board
       .map((cell, index) => (cell === null ? index : null))
@@ -61,8 +67,8 @@ const AI = (() => {
     return availableMoves[Math.floor(Math.random() * availableMoves.length)];
   };
 
-  // Semi-strategic Move AI
-  const getIntermediateMoveIndex = (board) => {
+  // Strategic AI (makes winning moves and uses probability distribution)
+  const strategicMove = (board) => {
     const availableMoves = getAvailableMoves(board);
     let selectedMoveIndex = null;
 
@@ -78,15 +84,22 @@ const AI = (() => {
 
     // If no winning move is available, select a move based on probability distribution
     if (selectedMoveIndex === null) {
-      const distribution = [2, 1, 2, 1, 4, 1, 2, 1, 2]; // probability distribution
+      // Define a probability distribution for each cell of the board
+      const distribution = [2, 1, 2, 1, 4, 1, 2, 1, 2];
+
+      // Assign a weight to each available move based on the probability distribution
       const weightedMoves = availableMoves.map((move) => ({
         move,
         weight: distribution[move],
       }));
+
+      // Calculate the total weight of all available moves
       const totalWeight = weightedMoves.reduce(
         (accumulator, { weight }) => accumulator + weight,
         0
       );
+
+      // Choose a random weight from 1 to the total weight and select the corresponding move
       const randomWeight = Math.floor(Math.random() * totalWeight) + 1;
       let cumulativeWeight = 0;
       for (let i = 0; i < weightedMoves.length; i++) {
@@ -101,51 +114,50 @@ const AI = (() => {
     return selectedMoveIndex;
   };
 
-  // Best Move AI
-  const getBestMove = (board, depth, isMaximizing) => {
+  // Unbeatable AI (makes move based on board configuration)
+  const unbeatableMove = (board) => {
+    // Defines a set of scores for different game outcomes
     const scores = {
-      x: -10,
-      o: 10,
-      tie: 0,
+      x: -10, // represents the score for when the human player wins
+      o: 10, // represents the score for when the AI wins
+      tie: 0, // represents the score for when the game is tied
     };
 
-    if (WinningConditions.checkWin(board, player)) {
-      return scores.x;
-    }
-    if (WinningConditions.checkWin(board, ai)) {
-      return scores.o;
-    }
-    if (WinningConditions.checkTie(board)) {
-      return scores.tie;
-    }
+    // Recursively determine the best possible move for the AI, given the current board state.
+    const getBestMove = (board, depth, isMaximizing) => {
+      // Check if AI has won
+      if (WinningConditions.checkWin(board, ai)) {
+        return scores.o;
+      }
+      // Check if human player has won
+      if (WinningConditions.checkWin(board, player)) {
+        return scores.x;
+      }
+      // Check if game is tied
+      if (WinningConditions.checkTie(board)) {
+        return scores.tie;
+      }
 
-    if (isMaximizing) {
-      let bestScore = -Infinity;
+      // If none of the above conditions are true, explore all possible moves and find the best one.
+      let bestScore = isMaximizing ? -Infinity : Infinity;
       for (let i = 0; i < board.length; i++) {
         if (board[i] === null) {
-          board[i] = ai.marker;
-          const score = getBestMove(board, depth + 1, false);
+          board[i] = isMaximizing ? ai.marker : player.marker;
+          const score = getBestMove(board, depth + 1, !isMaximizing);
           board[i] = null;
-          bestScore = Math.max(score, bestScore);
+          bestScore = isMaximizing
+            ? Math.max(score, bestScore)
+            : Math.min(score, bestScore);
         }
       }
       return bestScore;
-    }
-    let bestScore = Infinity;
-    for (let i = 0; i < board.length; i++) {
-      if (board[i] === null) {
-        board[i] = player.marker;
-        const score = getBestMove(board, depth + 1, true);
-        board[i] = null;
-        bestScore = Math.min(score, bestScore);
-      }
-    }
-    return bestScore;
-  };
+    };
 
-  const getBestMoveIndex = (board) => {
     let bestScore = -Infinity;
     let bestMoveIndex = null;
+
+    // Get the available moves for the current board configuration and explore them to determine the
+    // best move.
     const availableMoves = getAvailableMoves(board);
     for (let i = 0; i < availableMoves.length; i++) {
       const index = availableMoves[i];
@@ -159,11 +171,10 @@ const AI = (() => {
     }
     return bestMoveIndex;
   };
-
   return {
     randomMove,
-    getIntermediateMoveIndex,
-    getBestMoveIndex,
+    strategicMove,
+    unbeatableMove,
   };
 })();
 
@@ -176,41 +187,41 @@ const GameController = (() => {
     const { marker } = currentPlayer;
     Gameboard.makeMove(index, marker);
 
+    // Check if current player has won
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
       winnerMessage = `${currentPlayer.name.toUpperCase()} WON!`;
       DisplayController.displayWinner();
       currentPlayer = player;
+      // Check if there is a tie game
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
       winnerMessage = 'ITS A TIE!';
       DisplayController.displayWinner();
       currentPlayer = player;
+      // If neither a player win or a tie game, then it's the AI's turn
     } else {
       currentPlayer = currentPlayer === player ? ai : player;
-
+      // If the current player is the AI, determine the AI's move
       if (currentPlayer === ai) {
-        if (DisplayController.difficulty === 'dumb') {
-          setTimeout(() => {
-            const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
-            playTurn(aiMoveIndex);
-          }, 500);
-        } else if (DisplayController.difficulty === 'strategic') {
-          setTimeout(() => {
-            const aiMoveIndex = AI.getIntermediateMoveIndex(
-              Gameboard.getBoard()
-            );
-            playTurn(aiMoveIndex);
-          }, 500);
-        } else if (DisplayController.difficulty === 'unbeatable') {
-          setTimeout(() => {
-            const aiMoveIndex = AI.getBestMoveIndex(Gameboard.getBoard());
-            playTurn(aiMoveIndex);
-          }, 500);
-        } else {
-          setTimeout(() => {
-            const aiMoveIndex = AI.randomMove(Gameboard.getBoard());
-            playTurn(aiMoveIndex);
-          }, 500);
+        let aiMoveIndex;
+        // Depending on the difficulty level, choose a different AI move
+        switch (DisplayController.difficulty) {
+          case 'dumb':
+            aiMoveIndex = AI.randomMove(Gameboard.getBoard());
+            break;
+          case 'strategic':
+            aiMoveIndex = AI.strategicMove(Gameboard.getBoard());
+            break;
+          case 'unbeatable':
+            aiMoveIndex = AI.unbeatableMove(Gameboard.getBoard());
+            break;
+          default:
+            aiMoveIndex = AI.randomMove(Gameboard.getBoard());
+            break;
         }
+        // Wait for 0.5 seconds before making the AI move
+        setTimeout(() => {
+          playTurn(aiMoveIndex);
+        }, 500);
       }
     }
 
@@ -229,21 +240,21 @@ const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
   const restartButton = document.querySelector('#restartButton button');
   const dropdownMenu = document.querySelector('#difficulty');
+  const overlay = document.querySelector('#overlay');
+  const popup = document.querySelector('#popup');
 
   const difficulty = null;
 
   const displayWinner = () => {
     const winnerMessage = GameController.getWinner();
-
-    const overlay = document.querySelector('#overlay');
     overlay.style.display = 'flex';
 
-    const popup = document.querySelector('#popup');
-
+    // Create and display the round result message
     const roundResult = document.createElement('p');
     roundResult.textContent = winnerMessage;
     popup.appendChild(roundResult);
 
+    // Create and display the restart button
     const restartBtn = document.createElement('button');
     restartBtn.textContent = 'Restart';
     popup.appendChild(restartBtn);
@@ -256,10 +267,7 @@ const DisplayController = (() => {
     });
   };
 
-  dropdownMenu.addEventListener('change', (e) => {
-    handleDifficulty(e);
-  });
-
+  // Update the difficulty level based on the user's selection
   const handleDifficulty = (e) => {
     if (e.target.value === 'dumb') {
       DisplayController.difficulty = 'dumb';
@@ -271,6 +279,11 @@ const DisplayController = (() => {
     return DisplayController.difficulty;
   };
 
+  dropdownMenu.addEventListener('change', (e) => {
+    handleDifficulty(e);
+  });
+
+  // Update the game board display with the current board state
   const displayBoard = () => {
     const board = Gameboard.getBoard();
     squares.forEach((square, index) => {
@@ -279,10 +292,13 @@ const DisplayController = (() => {
   };
 
   const clearBoard = () => {
-    squares.forEach((square) => (square.textContent = ''));
+    squares.forEach((square) => {
+      square.textContent = '';
+    });
     GameController.currentPlayer = player;
   };
 
+  // Add event listeners to each game board square
   squares.forEach((square, index) => {
     square.addEventListener('click', () => {
       if (!Gameboard.getBoard()[index]) {
