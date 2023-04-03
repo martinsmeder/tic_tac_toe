@@ -18,16 +18,56 @@ main {
     align-content: space-between;
 }
 
+button {
+    padding: 3px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    width: 150px;
+    font-size: 1.5rem;
+    transition: all 0.1s ease;
+    background: #FFF;
+    cursor: pointer;
+}
+
+button:hover {
+    box-shadow: 0 0 .5rem #000;
+}
+
+button:active {
+    transform: scale(1.1);
+}
+
 #gameBoard {
-    height: 300px;
-    width: 300px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    border-right: none;
+    border-bottom: none;
 }
 
 #gameBoard div {
-    border: 1px solid #000;
+    height: 100px;
+    width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0;
+    font-size: 2rem;
 }
+
+#gameBoard div:nth-child(3n+3) {
+    border-left: 2px solid #000;
+}
+
+#gameBoard div:nth-child(3n+1) {
+    border-right: 2px solid #000;
+}
+
+#gameBoard div:nth-child(1n+4) {
+    border-top: 2px solid #000;
+}
+  
+
+
 
 /* OVERLAY */
 #overlay {
@@ -49,8 +89,56 @@ main {
     transform: translate(-50%, -50%);
     background-color: white;
     padding: 20px;
+    font-size: 3rem;
+    border: 1px solid #000;
+    border-radius: 7px;
+    box-shadow: 0 0 .9rem #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
 #popup button {
-    margin-top: 10px;
+    padding: 3px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    width: 200px;
+    font-size: 1.5rem;
+    transition: all 0.1s ease;
+    background: #FFF;
+    cursor: pointer;
 }
+
+#popup button:hover {
+    box-shadow: 0 0 .5rem #000;
+}
+
+#popup button:active {
+    transform: scale(1.1);
+}
+
+
+
+/* DROPDOWN  */
+#difficulty {
+    appearance: none;
+    background-color: #FFF;
+    border: 2px solid #000;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 40px 10px 20px;
+    transition: all 0.3s ease;
+    width: 150px;
+} 
+
+#difficulty:hover,
+#difficulty:focus {
+    box-shadow: 0 0 .5rem #000;
+}
+
+#difficulty option:checked {
+    font-weight: bold;
+}
+

@@ -189,12 +189,12 @@ const GameController = (() => {
 
     // Check if current player has won
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
-      winnerMessage = `${currentPlayer.name.toUpperCase()} WON!`;
+      winnerMessage = `The winner is... ${currentPlayer.marker.toUpperCase()}!`;
       DisplayController.displayWinner();
       currentPlayer = player;
       // Check if there is a tie game
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
-      winnerMessage = 'ITS A TIE!';
+      winnerMessage = 'Its a tie!';
       DisplayController.displayWinner();
       currentPlayer = player;
       // If neither a player win or a tie game, then it's the AI's turn
@@ -239,7 +239,7 @@ const GameController = (() => {
 const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
   const restartButton = document.querySelector('#restartButton button');
-  const dropdownMenu = document.querySelector('#difficulty');
+  const dropdownMenu = document.querySelectorAll('#difficulty > a');
   const overlay = document.querySelector('#overlay');
   const popup = document.querySelector('#popup');
 
@@ -256,7 +256,7 @@ const DisplayController = (() => {
 
     // Create and display the restart button
     const restartBtn = document.createElement('button');
-    restartBtn.textContent = 'Restart';
+    restartBtn.textContent = 'Play again';
     popup.appendChild(restartBtn);
 
     restartBtn.addEventListener('click', () => {
@@ -269,18 +269,21 @@ const DisplayController = (() => {
 
   // Update the difficulty level based on the user's selection
   const handleDifficulty = (e) => {
-    if (e.target.value === 'dumb') {
+    if (e.target.getAttribute('data-value') === 'dumb') {
       DisplayController.difficulty = 'dumb';
-    } else if (e.target.value === 'strategic') {
+    } else if (e.target.getAttribute('data-value') === 'strategic') {
       DisplayController.difficulty = 'strategic';
-    } else if (e.target.value === 'unbeatable') {
+    } else if (e.target.getAttribute('data-value') === 'unbeatable') {
       DisplayController.difficulty = 'unbeatable';
     }
     return DisplayController.difficulty;
   };
 
-  dropdownMenu.addEventListener('change', (e) => {
-    handleDifficulty(e);
+  // Add event listener to all links
+  Array.from(dropdownMenu).forEach((link) => {
+    link.addEventListener('click', (e) => {
+      handleDifficulty(e);
+    });
   });
 
   // Update the game board display with the current board state
