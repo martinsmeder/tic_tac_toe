@@ -189,12 +189,12 @@ const GameController = (() => {
 
     // Check if current player has won
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
-      winnerMessage = `The winner is... ${currentPlayer.marker.toUpperCase()}!`;
+      winnerMessage = `THE WINNER IS... ${currentPlayer.marker.toUpperCase()}!`;
       DisplayController.displayWinner();
       currentPlayer = player;
       // Check if there is a tie game
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
-      winnerMessage = 'Its a tie!';
+      winnerMessage = 'ITS A TIE!';
       DisplayController.displayWinner();
       currentPlayer = player;
       // If neither a player win or a tie game, then it's the AI's turn
@@ -240,6 +240,7 @@ const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
   const restartButton = document.querySelector('#restartButton button');
   const dropdownMenu = document.querySelectorAll('#difficulty > a');
+  const dropdownBtn = document.querySelector('#dropdownBtn');
   const overlay = document.querySelector('#overlay');
   const popup = document.querySelector('#popup');
 
@@ -256,7 +257,7 @@ const DisplayController = (() => {
 
     // Create and display the restart button
     const restartBtn = document.createElement('button');
-    restartBtn.textContent = 'Play again';
+    restartBtn.textContent = 'PLAY AGAIN';
     popup.appendChild(restartBtn);
 
     restartBtn.addEventListener('click', () => {
@@ -267,8 +268,24 @@ const DisplayController = (() => {
     });
   };
 
+  // Add classes to dropdownBtn for styling purposes
+  dropdownBtn.addEventListener('click', () => {
+    dropdownBtn.classList.toggle('showDifficulty');
+  });
+
   // Update the difficulty level based on the user's selection
   const handleDifficulty = (e) => {
+    // Display opponent choice
+    if (e.target.getAttribute('data-value') === 'dumb') {
+      DisplayController.difficulty = 'dumb';
+    } else if (e.target.getAttribute('data-value') === 'strategic') {
+      DisplayController.difficulty = 'strategic';
+    } else if (e.target.getAttribute('data-value') === 'unbeatable') {
+      DisplayController.difficulty = 'unbeatable';
+    }
+    dropdownBtn.textContent = `OPPONENT: ${DisplayController.difficulty.toUpperCase()} AI`;
+
+    // Change opponent difficulty
     if (e.target.getAttribute('data-value') === 'dumb') {
       DisplayController.difficulty = 'dumb';
     } else if (e.target.getAttribute('data-value') === 'strategic') {
@@ -283,6 +300,7 @@ const DisplayController = (() => {
   Array.from(dropdownMenu).forEach((link) => {
     link.addEventListener('click', (e) => {
       handleDifficulty(e);
+      dropdownBtn.classList.remove('showDifficulty');
     });
   });
 

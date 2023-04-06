@@ -4,7 +4,28 @@
     padding: 0px;
 }
 
+header {
+    height: 10vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid #000;
+    box-shadow: 0 0 .9rem #000;
+    font-size: 2rem;
+  
+    /* Create gradient */
+    background-image: linear-gradient(45deg, #696967, #eeeaeb, #696967);
+  
+    /* Show the gradient as a text color rather than element bg. */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; 
+    -moz-background-clip: text;
+    -moz-text-fill-color: transparent;
+}
+
 body {
+    font-family: 'Kanit', sans-serif;
     height: 100vh;
     display: grid;
     justify-items: center;
@@ -12,46 +33,77 @@ body {
 }
 
 main {
-    height: 50vh;
+    max-width: 500px;
+    height: auto;
+    width: auto;
     display: grid;
     justify-items: center;
-    align-content: space-between;
+    align-content: space-evenly;
+    border: 1px solid #000;
+    border-radius: 10px;
+    box-shadow: 0 0 .9rem rgba(0,0,0,0.5);
 }
 
-button {
-    padding: 3px;
-    border: 2px solid #000;
-    border-radius: 7px;
-    width: 150px;
+footer {
+    height: 5vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 2px solid #000;
     font-size: 1.5rem;
-    transition: all 0.1s ease;
-    background: #FFF;
-    cursor: pointer;
+    box-shadow: 0 0 .9rem rgba(0,0,0,0.5);
+    
 }
 
-button:hover {
-    box-shadow: 0 0 .5rem #000;
+footer a {
+    text-decoration: none;
+    color: #000;
+    /* Create gradient */
+    background-image: linear-gradient(45deg, #696967, #eeeaeb, #696967);
+  
+    /* Show the gradient as a text color rather than element bg. */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; 
+    -moz-background-clip: text;
+    -moz-text-fill-color: transparent;
 }
 
-button:active {
+footer a:hover {
+    color: #5c5c5c;
+}
+
+footer a:active {
     transform: scale(1.1);
 }
 
+#mainCenter {
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.15) 100%), radial-gradient(at top center, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.40) 120%) #989898;
+    display: flex;
+    justify-content: center;
+}
+
 #gameBoard {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    width: 240px;
+    height: 240px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     border-right: none;
-    border-bottom: none;
+    border-bottom: none;   
 }
 
 #gameBoard div {
-    height: 100px;
-    width: 100px;
+    height: 80px;
+    width: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-grow: 0;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    color: #FFF;
 }
 
 #gameBoard div:nth-child(3n+3) {
@@ -65,9 +117,6 @@ button:active {
 #gameBoard div:nth-child(1n+4) {
     border-top: 2px solid #000;
 }
-  
-
-
 
 /* OVERLAY */
 #overlay {
@@ -77,7 +126,6 @@ button:active {
     width: 100%;
     height: 100%;
     z-index: 999;
-    /* background-color: rgba(0, 0, 0, 0.5); */
     backdrop-filter: blur(5px);
     display: none;
 }
@@ -89,10 +137,10 @@ button:active {
     transform: translate(-50%, -50%);
     background-color: white;
     padding: 20px;
-    font-size: 3rem;
+    font-size: 2rem;
     border: 1px solid #000;
     border-radius: 7px;
-    box-shadow: 0 0 .9rem #000;
+    box-shadow: 0 0 .9rem rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -100,45 +148,136 @@ button:active {
 }
 
 #popup button {
+    font-family: 'Kanit', sans-serif;
     padding: 3px;
-    border: 2px solid #000;
+    border: none;
     border-radius: 7px;
-    width: 200px;
-    font-size: 1.5rem;
+    width: 150px;
+    font-size: 1rem;
     transition: all 0.1s ease;
     background: #FFF;
     cursor: pointer;
 }
 
 #popup button:hover {
-    box-shadow: 0 0 .5rem #000;
+    box-shadow: 0 0 .5rem rgba(0,0,0,0.3);
 }
 
 #popup button:active {
     transform: scale(1.1);
 }
 
-
-
 /* DROPDOWN  */
-#difficulty {
-    appearance: none;
+#dropdownBtn {
+    font-family: 'Kanit', sans-serif;
     background-color: #FFF;
-    border: 2px solid #000;
-    border-radius: 4px;
+    padding: 10px;
+    width: 270px;
+    font-size: 1rem;
+    border: none;
     cursor: pointer;
-    font-size: 16px;
-    padding: 10px 40px 10px 20px;
-    transition: all 0.3s ease;
-    width: 150px;
+    border-radius: 10px;
+    box-shadow: 0 0 .5rem rgba(0,0,0,0.3);
+    position: relative; /* add relative positioning to make the absolute positioning of the dropdown work */
+}
+
+#dropdownMenu {
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* add relative positioning to make the absolute positioning of the dropdown work */
+}
+
+#dropdownBtn.showDifficulty + #difficulty {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%; /* position the dropdown below the dropdown button */
+    left: 0; /* align the left edge of the dropdown with the left edge of the dropdown button */
+}
+
+#difficulty {
+    display: none;
+    position: none;
+    background-color: #FFF;
+    min-width: 135px;
+    box-shadow: 0 .2rem .5rem 0 rgba(0,0,0,0.3);
+    z-index: 1;
+    border-radius: 10px;
 } 
 
-#difficulty:hover,
-#difficulty:focus {
-    box-shadow: 0 0 .5rem #000;
+#difficulty a {
+    font-size: .8rem;
+    color: black;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
 }
 
-#difficulty option:checked {
-    font-weight: bold;
+#difficulty a:hover,
+#difficulty a:focus {
+    box-shadow: 0 0 .5rem rgba(0,0,0,0.3);
+    border-radius: 5px;
 }
 
+/* RESTART BUTTON  */
+#restartButton button {
+    margin: 20px;
+    font-family: 'Kanit', sans-serif;
+    padding: 3px;
+    border: none;
+    border-radius: 7px;
+    width: 120px;
+    font-size: 1rem;
+    transition: all 0.1s ease;
+    background: #FFF;
+    cursor: pointer;
+}
+
+#restartButton button:hover {
+    box-shadow: 0 0 .5rem rgba(0,0,0,0.3);
+}
+
+#restartButton button:active {
+    transform: scale(1.1);
+}
+
+@media (max-width: 550px) {
+    * {
+        width: auto;
+    }
+
+    main {
+        height: auto;
+        width: auto;
+        align-content: space-evenly;
+    }
+
+    #gameBoard {
+        width: auto;
+        height: auto;
+    }
+
+    #mainCenter {
+        width: 100%;
+        height: auto;
+    }
+
+    #gameBoard div {
+        height: 1fr;
+        width: 1fr;
+        font-size: 2rem;
+    }
+
+    header {
+        font-size: 1.2rem;
+        height: auto;
+        text-align: center;
+    }
+}
+
+@media (max-width: 300px) {
+    * {
+        overflow-x: hidden;
+    }
+}
