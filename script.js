@@ -16,6 +16,23 @@ const Gameboard = (() => {
   // Allows player to move on the board by setting their marker in the specified index
   const makeMove = (index, player) => {
     board[index] = player;
+
+    // Get the square and marker element for the given index
+    const square = document.querySelector(
+      `#gameBoard > div:nth-child(${index + 1})`
+    );
+    const marker = square.querySelector('span');
+
+    // Add a CSS class to the marker element based on the player's marker
+    marker.classList.add(player.marker);
+
+    // Add an additional CSS class to trigger the animation
+    marker.classList.add('marker');
+
+    // Remove the animation class after a short delay
+    setTimeout(() => {
+      marker.classList.remove('marker');
+    }, 1000);
   };
 
   return {
@@ -189,9 +206,11 @@ const GameController = (() => {
 
     // Check if current player has won
     if (WinningConditions.checkWin(Gameboard.getBoard(), currentPlayer)) {
-      winnerMessage = `THE WINNER IS... ${currentPlayer.marker.toUpperCase()}!`;
-      DisplayController.displayWinner();
-      currentPlayer = player;
+      setTimeout(() => {
+        winnerMessage = `THE WINNER IS... ${currentPlayer.marker.toUpperCase()}!`;
+        DisplayController.displayWinner();
+        currentPlayer = player;
+      }, 500);
       // Check if there is a tie game
     } else if (WinningConditions.checkTie(Gameboard.getBoard())) {
       winnerMessage = 'ITS A TIE!';
@@ -238,6 +257,7 @@ const GameController = (() => {
 // DisplayController Module
 const DisplayController = (() => {
   const squares = document.querySelectorAll('#gameBoard > div');
+  const markers = document.querySelectorAll('#gameBoard > div > span');
   const restartButton = document.querySelector('#restartButton button');
   const dropdownMenu = document.querySelectorAll('#difficulty > a');
   const dropdownBtn = document.querySelector('#dropdownBtn');
@@ -249,6 +269,7 @@ const DisplayController = (() => {
   const displayWinner = () => {
     const winnerMessage = GameController.getWinner();
     overlay.style.display = 'flex';
+    popup.classList.add('popup');
 
     // Create and display the round result message
     const roundResult = document.createElement('p');
@@ -265,6 +286,7 @@ const DisplayController = (() => {
       popup.removeChild(roundResult);
       popup.removeChild(restartBtn);
       overlay.style.display = 'none';
+      popup.classList.remove('popup');
     });
   };
 
@@ -307,24 +329,28 @@ const DisplayController = (() => {
   // Update the game board display with the current board state
   const displayBoard = () => {
     const board = Gameboard.getBoard();
-    squares.forEach((square, index) => {
-      square.textContent = board[index] || '';
+    markers.forEach((marker, index) => {
+      marker.textContent = board[index] || '';
     });
   };
 
   const clearBoard = () => {
-    squares.forEach((square) => {
-      square.textContent = '';
+    markers.forEach((marker) => {
+      marker.textContent = '';
     });
     GameController.currentPlayer = player;
   };
 
   // Add event listeners to each game board square
   squares.forEach((square, index) => {
+    const markerIndex = index;
+    square.setAttribute('data-marker', markerIndex);
+
     square.addEventListener('click', () => {
       if (!Gameboard.getBoard()[index]) {
         GameController.playTurn(index);
-        square.textContent = GameController.currentPlayer.marker;
+        const marker = markers[markerIndex];
+        marker.textContent = GameController.currentPlayer.marker;
       }
     });
   });

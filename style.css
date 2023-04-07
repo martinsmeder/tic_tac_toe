@@ -77,6 +77,7 @@ footer a:active {
     transform: scale(1.1);
 }
 
+/* BOARD  */
 #mainCenter {
     width: 100%;
     background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.15) 100%), radial-gradient(at top center, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.40) 120%) #989898;
@@ -242,31 +243,45 @@ footer a:active {
     transform: scale(1.1);
 }
 
+/* ANIMATIONS */
+.marker {
+    animation-name: marker-animation;
+    animation-duration: .2s;
+    animation-timing-function: ease-out;
+}
+
+@keyframes marker-animation {
+0% {
+    transform: scale(7);
+}
+100% {
+    transform: scale(1);
+}
+}
+
+.popup {
+    animation-name: popup-animation;
+    animation-duration: .5s;
+    animation-timing-function: ease-in;
+  }
+  
+@keyframes popup-animation {
+0% {
+    transform: translate(-50%, -400%);
+    }
+    100% {
+    transform: translate(-50%, -50%);
+    }
+}
+
+/* MEDIA QUERIES  */
 @media (max-width: 550px) {
     * {
         width: auto;
     }
 
-    main {
-        height: auto;
-        width: auto;
-        align-content: space-evenly;
-    }
-
-    #gameBoard {
-        width: auto;
-        height: auto;
-    }
-
     #mainCenter {
         width: 100%;
-        height: auto;
-    }
-
-    #gameBoard div {
-        height: 1fr;
-        width: 1fr;
-        font-size: 2rem;
     }
 
     header {
